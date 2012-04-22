@@ -1,0 +1,109 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""Converts apptaster files to html5."""
+
+from __future__ import with_statement
+from contextlib import closing
+
+import codecs
+import logging
+import os.path
+import sys
+import xml.etree.ElementTree as ET
+import zipfile
+
+
+DIRNAME = "-html"
+
+
+def process_screen(zip_main, xml_screen, basedir, home_screen_id):
+	"""f(ZipInfo, Element, string) -> None
+
+	Pass the zip to extract from the resources and the xml screen node you want
+	to extract. The function will create an HTML file and extract the
+	associated image, creating a hyperlinked imagemap for it.
+
+	Pass the basedir where all files are to be created and the identifier of
+	the home screen. This will be copied to be the index.html file.
+	"""
+	screen_id = xml_screen.get("id")
+	screen_name = xml_screen.find("name").text
+	screen_file = xml_screen.find("portraitFileName").text
+	html_file = os.path.join(basedir, "%s.html" % screen_id)
+	logging.info("Creating %r", html_file)
+	with closing(codecs.open(html_file, "wb", "utf-8")) as o:
+		o.write("<html><head><meta http-equiv=")
+		o.write('"Content-Type" content="text/html; charset=UTF-8"><title>')
+		o.write(screen_name)
+		o.write("</title></head><body><h1>")
+		o.write(screen_name)
+		o.write("</h1><img src='%s' usemap='#m'><map name='m'>" % screen_file)
+		for link in xml_screen.findall("portraitLinks/link"):
+			target_id = link.get("targetId")
+			x = int(float(link.get("x")))
+			y = int(float(link.get("y")))
+			w = int(float(link.get("w")))
+			h = int(float(link.get("h")))
+			o.write('<area shape="rect" coords="%d,%d,%d,%d" href="%s.html">' %\
+				(x - w / 2, y - h / 2, x + w / 2, y + h / 2, target_id))
+		o.write("</body></html>")
+
+	img_file = os.path.join(basedir, screen_file)
+	with closing(open(img_file, "wb")) as o:
+		o.write(zip_main.read(screen_file))
+
+	if home_screen_id == screen_id:
+		with closing(open(html_file, "rb")) as input_file:
+			with closing(open(os.path.join(basedir, "index.html"), "wb")) as o:
+				o.write(input_file.read())
+
+
+def process_apptaster(apptaster_filename):
+	"""f(string) -> None
+
+	Opens an apptaster zipfile and starts to extract the files"
+	"""
+	try:
+		zip_main = zipfile.ZipFile(apptaster_filename)
+	except:
+		logging.error("Couldn't open zip file %r", apptaster_filename)
+		return
+
+	basedir, filename = os.path.split(apptaster_filename)
+	basename = os.path.splitext(filename)[0] + DIRNAME
+	basedir = os.path.join(basedir, basename)
+	try: os.makedirs(basedir)
+	except: pass
+
+	root = ET.fromstring(zip_main.read("project"))
+	home_screen_id = root.find("screens").get("startScreenId")
+	for screen in root.findall("screens/screen"):
+		process_screen(zip_main, screen, basedir, home_screen_id)
+
+
+def main():
+	"""f() -> None
+
+	Main entry point of the application.
+	"""
+	args = [x for x in sys.argv[1:] if x.lower().find(".apptaster") > 0]
+	if not args:
+		print "Usage: %s files" % sys.argv[0]
+		return
+
+	errors = 0
+	for filename in args:
+		try:
+			process_apptaster(filename)
+		except:
+			logging.exception("Error processing %r", filename)
+			errors = errors + 1
+
+	return errors
+
+
+if "__main__" == __name__:
+	logging.basicConfig(level = logging.INFO)
+	main()
+
+# vim:tabstop=4 shiftwidth=4
