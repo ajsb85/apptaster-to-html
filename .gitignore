@@ -1,0 +1,5 @@
+*.diff
+*.swp
+.DS_Store
+build
+tags*
