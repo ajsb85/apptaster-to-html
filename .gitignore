@@ -3,3 +3,7 @@
 .DS_Store
 build
 tags*
+
+# HTML readme preview
+README.html
+build.py
