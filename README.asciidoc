@@ -1,0 +1,104 @@
+= Apptaster to html = 
+Grzegorz Adam Hankiewicz <gradha@imap.cc>
+
+
+== General ==
+
+Apptaster-to-html will convert your http://www.app-taster.com/[Apptaster]
+exported files from http://www.appcooker.com/[App Cooker] into good old HTML
+with imagemaps to make them interactive. This beats the pants down of App
+Cooker's image or pdf export, since those are static. Also, the exported HTML
+plays nice with any static file web server (like
+https://www.dropbox.com/[Dropbox] so you can send a link to your prototype to
+your clients and let them play with it.
+
+**IMPORTANT NOTE**: I prototype once every 27 years, so after my last session I
+whipped this script in about two hours to show stuff to people (which includes
+this lame readme). Unfortunately that means the script is not generic (for
+instance, it won't work on landscape prototypes due to ignoring the tags) and
+it only sees/exports what I've needed.  See the <<todo,TODO section>> for
+ideas/improvements.
+
+Also, I'm not affiliated with https://www.dropbox.com/[Dropbox], but if you haven't heard,
+https://www.dropbox.com/[Dropbox] is the bee's knees, the chocolate in your icecream, the syntax
+sugar of your objective-c properties, the... ok, who cares.
+
+
+== Usage ==
+
+You need a python 2.5 (*I believe*), which comes in about every mac able to run
+the iOS SDK. On Windows you can install http://www.python.org/ without problems
+(don't get version 3.0 or above, that's toxic) and run this from the command
+line:
+
+----------------------------------------
+apptaster-to-html.py prototype.apptaster
+----------------------------------------
+
+The script will work through the input parameters opening each apptaster file
+and exporting html and images to a subdirectory.
+
+
+== When it goes wrong ==
+
+Oh, boy, and it **will** go wrong. Maybe the script will fail, maybe it won't
+export anything. You have two choices:
+
+1. Send me your apptaster file and be lucky I decide to improve the script so
+   it can be exported.
+
+2. Rename your `.apptaster` file to a `.zip` file, unzip, and rename the
+   `project` file to `.xml`, which then you can drag on Safari. That will show
+   you the structure of the project and reading the source you may find out
+   what is not working for your prototype.
+
+
+== TODO ==
+
+Just because I'm describing this it doesn't mean I will do it:
+
+* Parsing the full range of tags in the apptaster xml would be nice.
+
+* I stopped writting HTML and stuff long ago because I had to do it uphill,
+both ways, in the snow. I've been told there are cleaning tools like
+http://www.google.es/search?q=ajax+clean&tbm=isch[Ajax] and other improvements
+nowadays to make it all prettier, more interactive, more...  more... I don't
+know. Maybe you would like to do stuff like that?
+
+* Since this ajax/web 2.0 stuff is easy for you, you could have also an
+in-browser setting which the user could click and suddenly all imagemap areas
+would be highlighted with a color of the user choice. So the user can see the
+areas which are clickable and doesn't require moving the mouse over the image
+(which can't be done when viewing on a tablet, for instance).
+
+* Also, below each image you could write a good old <li> with all the
+interactive areas and a link to them with a title, so even if the user doesn't
+want to touch the image she can navigate textually.
+
+* It would be nice to use http://docs.python.org/library/optparse.html[python's
+optparse] (or anything else, really) to process command line options. You could
+then specify the output directory for the HTML/images rather than generate it
+where the file is.
+
+* And maybe you would like to use
+http://docs.python.org/library/configparser.html[python's ConfigParser] module
+(or something else) to store a configuration file in your $HOME so that this
+exportaiton directory (your dropbox folder maybe?) is automatically used.
+
+* There are javascript online forum additions to webpages (http://disqus.com/).
+How about maybe hacking something similar for the exportation so your clients
+can comment directly each of your prototype's screens from their webbrowser?
+
+If you fancy doing anything of this or other stuff you can imagine, don't
+hesitate to do so! You could even send me a pull request later, or I could
+remove this fork in favour of your maintained version if it goes far ahead.
+
+
+== License ==
+
+This script is licensed under the GNU General Public License, version 3
+(http://www.opensource.org/licenses/GPL-3.0) simply because everybody says
+every day more and more people are licensing stuff under BSD/MIT and **that
+can't really be allowed to happen**. Besides, who cares about the license of a
+100 lines python script?  If you can't reimplement it yourself cleanly in your
+favourite language, you are *doomed*.
