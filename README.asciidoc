@@ -23,6 +23,12 @@ Also, I'm not affiliated with https://www.dropbox.com/[Dropbox], but if you have
 https://www.dropbox.com/[Dropbox] is the bee's knees, the chocolate in your icecream, the syntax
 sugar of your objective-c properties, the... ok, who cares.
 
+Finally, this small script was written because
+http://itunes.apple.com/es/app/app-taster-play-mockups-wireframes/id518977767?mt=8[Apptaster
+the app] was **NOT** available. Now that it is, the usefulness of this script
+is relegated to very narrow niches (eg. clients who want you to write an ipad
+app and don't have an ipad themselves... er... wait, somethings wrong).
+
 
 == Usage ==
 
