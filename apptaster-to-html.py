@@ -16,8 +16,9 @@ import zipfile
 DIRNAME = "-html"
 
 
-def process_screen(zip_main, xml_screen, basedir, home_screen_id):
-	"""f(ZipInfo, Element, string) -> None
+def process_screen(zip_main, xml_screen, basedir, home_screen_id,
+		valid_screens):
+	"""f(ZipInfo, Element, string, string, [string]) -> None
 
 	Pass the zip to extract from the resources and the xml screen node you want
 	to extract. The function will create an HTML file and extract the
@@ -25,6 +26,11 @@ def process_screen(zip_main, xml_screen, basedir, home_screen_id):
 
 	Pass the basedir where all files are to be created and the identifier of
 	the home screen. This will be copied to be the index.html file.
+
+	The home_screen_id specifies what is the home screen identifier, should a
+	link be made to it. The valid_screens contains a list of strings with the
+	existing screen identifiers, which is used to filter strange zeroth links
+	in the xml pMultipleLinks/multipleLink section.
 	"""
 	screen_id = xml_screen.get("id")
 	screen_name = xml_screen.find("name").text
@@ -38,8 +44,11 @@ def process_screen(zip_main, xml_screen, basedir, home_screen_id):
 		o.write("</title></head><body><h1>")
 		o.write(screen_name)
 		o.write("</h1><img src='%s' usemap='#m'><map name='m'>" % screen_file)
-		for link in xml_screen.findall("portraitLinks/link"):
+		for link in (xml_screen.findall("portraitLinks/link") +
+				xml_screen.findall("pMultipleLinks/multipleLink/link")):
 			target_id = link.get("targetId")
+			if target_id not in valid_screens:
+				continue
 			x = int(float(link.get("x")))
 			y = int(float(link.get("y")))
 			w = int(float(link.get("w")))
@@ -77,8 +86,9 @@ def process_apptaster(apptaster_filename):
 
 	root = ET.fromstring(zip_main.read("project"))
 	home_screen_id = root.find("screens").get("startScreenId")
+	valid_screens = [x.get("id") for x in root.findall("screens/screen")]
 	for screen in root.findall("screens/screen"):
-		process_screen(zip_main, screen, basedir, home_screen_id)
+		process_screen(zip_main, screen, basedir, home_screen_id, valid_screens)
 
 
 def main():
