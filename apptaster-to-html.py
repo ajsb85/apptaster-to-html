@@ -47,14 +47,22 @@ def process_screen(zip_main, xml_screen, basedir, home_screen_id,
 		for link in (xml_screen.findall("portraitLinks/link") +
 				xml_screen.findall("pMultipleLinks/multipleLink/link")):
 			target_id = link.get("targetId")
-			if target_id not in valid_screens:
+			link_type = link.get("type")
+			if link_type not in ["1", "3"]:
+				print "Unknown link type", link_type
 				continue
+			if "3" == link_type:
+				href = "javascript:history.back()"
+			else:
+				href = "%s.html" % target_id
+				if target_id not in valid_screens:
+					continue
 			x = int(float(link.get("x")))
 			y = int(float(link.get("y")))
 			w = int(float(link.get("w")))
 			h = int(float(link.get("h")))
-			o.write('<area shape="rect" coords="%d,%d,%d,%d" href="%s.html">' %\
-				(x - w / 2, y - h / 2, x + w / 2, y + h / 2, target_id))
+			o.write('<area shape="rect" coords="%d,%d,%d,%d" href="%s">' % (
+				x - w / 2, y - h / 2, x + w / 2, y + h / 2, href))
 		o.write("</body></html>")
 
 	img_file = os.path.join(basedir, screen_file)
