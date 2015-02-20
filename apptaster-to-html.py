@@ -45,18 +45,25 @@ def process_screen(zip_main, xml_screen, basedir, home_screen_id,
 		o.write(screen_name)
 		o.write("</h1><img src='%s' usemap='#m'><map name='m'>" % screen_file)
 		for link in (xml_screen.findall("portraitLinks/link") +
-				xml_screen.findall("pMultipleLinks/multipleLink/link")):
+				xml_screen.findall("pMultipleLinks/multipleLink/link") +
+				xml_screen.findall("timerLink/link")):
 			target_id = link.get("targetId")
 			link_type = link.get("type")
-			if link_type not in ["1", "3"]:
+			if link_type not in ["1", "3", '4']:
 				print "Unknown link type", link_type
 				continue
 			if "3" == link_type:
 				href = "javascript:history.back()"
-			else:
+			elif link_type in ['1', '']:
 				href = "%s.html" % target_id
 				if target_id not in valid_screens:
 					continue
+			elif link_type in ['4']:
+				duration = int(float(link.get('transitionDuration')) * 10000)
+				href = "%s.html" % target_id
+				o.write(('<script>setTimeout(function() '
+						 '  { document.location = "%s"} ' 
+						 ', %s);</script>' % (href, duration)))
 			x = int(float(link.get("x")))
 			y = int(float(link.get("y")))
 			w = int(float(link.get("w")))
