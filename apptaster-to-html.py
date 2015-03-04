@@ -15,7 +15,6 @@ import zipfile
 
 DIRNAME = "-html"
 
-
 def process_screen(zip_main, xml_screen, basedir, home_screen_id,
 		valid_screens):
 	"""f(ZipInfo, Element, string, string, [string]) -> None
@@ -44,7 +43,7 @@ def process_screen(zip_main, xml_screen, basedir, home_screen_id,
 		o.write("</title></head><body><h1>")
 		o.write(screen_name)
 		o.write("</h1><img src='%s' usemap='#m'><map name='m'>" % screen_file)
-        img_maps = []
+		img_maps = []
 		for link in (xml_screen.findall("portraitLinks/link") +
 				xml_screen.findall("pMultipleLinks/multipleLink/link") +
 				xml_screen.findall("timerLink/link")):
@@ -74,9 +73,9 @@ def process_screen(zip_main, xml_screen, basedir, home_screen_id,
 			img_maps.append('<area shape="rect" coords="%d,%d,%d,%d" href="%s">' % (
 				x - w / 2, y - h / 2, x + w / 2, y + h / 2, href))
 		# reverse to match how apptaster does that. if not reversed
-		# links that are overlayed by previous links might not work. 
+		# links that are overlayed by previous links might not work.
 		for map in reversed(img_maps):
-			o.write(map)
+			 o.write(map)
 		o.write("</body></html>")
 
 	img_file = os.path.join(basedir, screen_file)
