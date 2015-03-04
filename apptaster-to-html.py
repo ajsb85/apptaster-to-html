@@ -15,7 +15,6 @@ import zipfile
 
 DIRNAME = "-html"
 
-
 def process_screen(zip_main, xml_screen, basedir, home_screen_id,
 		valid_screens):
 	"""f(ZipInfo, Element, string, string, [string]) -> None
@@ -44,25 +43,39 @@ def process_screen(zip_main, xml_screen, basedir, home_screen_id,
 		o.write("</title></head><body><h1>")
 		o.write(screen_name)
 		o.write("</h1><img src='%s' usemap='#m'><map name='m'>" % screen_file)
+		img_maps = []
 		for link in (xml_screen.findall("portraitLinks/link") +
-				xml_screen.findall("pMultipleLinks/multipleLink/link")):
+				xml_screen.findall("pMultipleLinks/multipleLink/link") +
+				xml_screen.findall("timerLink/link")):
 			target_id = link.get("targetId")
 			link_type = link.get("type")
-			if link_type not in ["1", "3"]:
+			if link_type not in ["1", "3", '4']:
 				print "Unknown link type", link_type
 				continue
 			if "3" == link_type:
 				href = "javascript:history.back()"
-			else:
+			elif link_type in ['1', '']:
 				href = "%s.html" % target_id
 				if target_id not in valid_screens:
 					continue
+			elif link_type in ['4']:
+				# see https://github.com/gradha/apptaster-to-html/pull/2#issuecomment-75604197
+				duration = int(float(link.get('timer')) * 1000)
+				href = "%s.html" % target_id
+				o.write(('<script>setTimeout(function() '
+						 '  { document.location = "%s"} ' 
+						 ', %s);</script>' % (href, duration)))
 			x = int(float(link.get("x")))
 			y = int(float(link.get("y")))
 			w = int(float(link.get("w")))
 			h = int(float(link.get("h")))
-			o.write('<area shape="rect" coords="%d,%d,%d,%d" href="%s">' % (
+			# make sure later links are above previous links
+			img_maps.append('<area shape="rect" coords="%d,%d,%d,%d" href="%s">' % (
 				x - w / 2, y - h / 2, x + w / 2, y + h / 2, href))
+		# reverse to match how apptaster does that. if not reversed
+		# links that are overlayed by previous links might not work.
+		for map in reversed(img_maps):
+			 o.write(map)
 		o.write("</body></html>")
 
 	img_file = os.path.join(basedir, screen_file)
