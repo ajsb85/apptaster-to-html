@@ -44,6 +44,7 @@ def process_screen(zip_main, xml_screen, basedir, home_screen_id,
 		o.write("</title></head><body><h1>")
 		o.write(screen_name)
 		o.write("</h1><img src='%s' usemap='#m'><map name='m'>" % screen_file)
+        img_maps = []
 		for link in (xml_screen.findall("portraitLinks/link") +
 				xml_screen.findall("pMultipleLinks/multipleLink/link") +
 				xml_screen.findall("timerLink/link")):
@@ -59,7 +60,8 @@ def process_screen(zip_main, xml_screen, basedir, home_screen_id,
 				if target_id not in valid_screens:
 					continue
 			elif link_type in ['4']:
-				duration = int(float(link.get('transitionDuration')) * 10000)
+				# see https://github.com/gradha/apptaster-to-html/pull/2#issuecomment-75604197
+				duration = int(float(link.get('timer')) * 1000)
 				href = "%s.html" % target_id
 				o.write(('<script>setTimeout(function() '
 						 '  { document.location = "%s"} ' 
@@ -68,8 +70,13 @@ def process_screen(zip_main, xml_screen, basedir, home_screen_id,
 			y = int(float(link.get("y")))
 			w = int(float(link.get("w")))
 			h = int(float(link.get("h")))
-			o.write('<area shape="rect" coords="%d,%d,%d,%d" href="%s">' % (
+			# make sure later links are above previous links
+			img_maps.append('<area shape="rect" coords="%d,%d,%d,%d" href="%s">' % (
 				x - w / 2, y - h / 2, x + w / 2, y + h / 2, href))
+		# reverse to match how apptaster does that. if not reversed
+		# links that are overlayed by previous links might not work. 
+		for map in reversed(img_maps):
+			o.write(map)
 		o.write("</body></html>")
 
 	img_file = os.path.join(basedir, screen_file)
